@@ -1,0 +1,1628 @@
+<!doctype html>
+<!--
+  ───────────────────────────────────────────────────────────────────────────
+  TECHNICAL DESIGN DOCUMENT — generated single-file page
+  ───────────────────────────────────────────────────────────────────────────
+  Rendered by doc-render.js from a stored document. The chrome below (sidebar,
+  viewer toolbar, theme toggle, print, mermaid controls) is fixed; only the sections
+  between the SECTIONS markers come from the document.
+
+  Do not hand-edit a generated page: the next push overwrites it. Change the
+  document instead, or change this shell to change every page at once.
+  ───────────────────────────────────────────────────────────────────────────
+-->
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MCP 2.0 Features — Visual Guide</title>
+<meta name="description" content="Interactive visual guide to the MCP 2026-07-28 specification: stateless core, MRTR, MCP Apps, Tasks, security, caching and migration." />
+<meta name="generator" content="mcp doc-sites" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────  tokens  ───────────────────────────── */
+:root{
+  --accent-400:#818cf8; --accent-500:#6366f1; --accent-600:#4f46e5;
+  --accent-soft:#eef2ff;
+  --page:#f4f4f5;  --sheet:#ffffff;  --sunken:#fafafa;
+  --line:#e8e8ec;  --line-soft:#f0f0f3;
+  --ink:#18181b;   --ink-2:#3f3f46;  --ink-3:#71717a;  --ink-4:#a1a1aa;
+  --code-bg:#0f172a; --code-ink:#e2e8f0; --code-key:#7dd3fc; --code-str:#86efac; --code-punc:#94a3b8;
+  --chip:#f4f4f5; --chip-ink:#52525b;
+  --ok-bg:#ecfdf5; --ok-ink:#047857; --warn-bg:#fffbeb; --warn-ink:#b45309;
+  --risk-bg:#fef2f2; --risk-ink:#b91c1c; --todo-bg:#f4f4f5; --todo-ink:#52525b;
+  --toc-ink:var(--ink);   /* resting colour of a contents item (pure white in dark) */
+  --r-sm:8px; --r-md:12px; --r-lg:14px; --r-xl:16px;   /* one radius scale, used everywhere */
+  --shadow:0 1px 2px rgba(16,16,20,.04), 0 8px 28px -12px rgba(16,16,20,.12);
+  --sheet-w:100%;        /* full-bleed; set a px cap here to centre the sheet instead */
+  --toc-w:300px; --gutter:24px; --header-h:60px;
+  --note-blue:#6366f1; --note-green:#10b981; --note-purple:#a855f7; --note-amber:#f59e0b;
+  --note-red:#ef4444;  --note-gray:#9ca3af;
+}
+:root:not([data-theme="light"]){ color-scheme:light }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --accent-400:#a5b4fc; --accent-500:#818cf8; --accent-600:#a5b4fc;
+    --accent-soft:#6366f129; --toc-ink:#ffffff;
+    --page:#17171b; --sheet:#1e1e23; --sunken:#26262c;
+    --line:#36363f; --line-soft:#2c2c34;
+    --ink:#f4f4f5; --ink-2:#d4d4d8; --ink-3:#b0b0b8; --ink-4:#8d8d96;
+    --code-bg:#15151b; --code-ink:#e4e4e7; --code-key:#93c5fd; --code-str:#86efac; --code-punc:#9a9aa5;
+    --chip:#32323a; --chip-ink:#e4e4e7;
+    --ok-bg:#064e3b55; --ok-ink:#6ee7b7; --warn-bg:#78350f55; --warn-ink:#fcd34d;
+    --risk-bg:#7f1d1d55; --risk-ink:#fca5a5; --todo-bg:#32323a; --todo-ink:#b0b0b8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 28px -12px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --accent-400:#a5b4fc; --accent-500:#818cf8; --accent-600:#a5b4fc;
+  --accent-soft:#6366f129; --toc-ink:#ffffff;
+  --page:#17171b; --sheet:#1e1e23; --sunken:#26262c;
+  --line:#36363f; --line-soft:#2c2c34;
+  --ink:#f4f4f5; --ink-2:#d4d4d8; --ink-3:#b0b0b8; --ink-4:#8d8d96;
+  --code-bg:#15151b; --code-ink:#e4e4e7; --code-key:#93c5fd; --code-str:#86efac; --code-punc:#9a9aa5;
+  --chip:#32323a; --chip-ink:#e4e4e7;
+  --ok-bg:#064e3b55; --ok-ink:#6ee7b7; --warn-bg:#78350f55; --warn-ink:#fcd34d;
+  --risk-bg:#7f1d1d55; --risk-ink:#fca5a5; --todo-bg:#32323a; --todo-ink:#b0b0b8;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 28px -12px rgba(0,0,0,.45);
+}
+
+/* ─────────────────────────────  base  ───────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%; overflow:hidden}   /* the page never scrolls; the content pane does */
+body{
+  margin:0; background:var(--page); color:var(--ink-2);
+  font:400 15px/1.7 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+/* --accent-600 is already remapped for dark, so one rule covers both themes
+   (a theme-scoped `a` rule here would outrank .toc a and tint the contents list) */
+a{color:var(--accent-600)}
+:focus-visible{outline:2px solid var(--accent-500); outline-offset:2px; border-radius:6px}
+
+/* ─────────────────────────────  fullscreen document viewer  ─────────── */
+.sheet{
+  width:100%; max-width:var(--sheet-w); height:100vh; height:100dvh; margin:0 auto;
+  display:flex; flex-direction:column; overflow:hidden;
+  background:var(--sheet);
+}
+.layout{
+  flex:1; min-height:0; position:relative;
+  display:grid; grid-template-columns:var(--toc-w) minmax(0,1fr);
+  gap:0;
+}
+/* The divider under the sidebar head and under the section heading is ONE element, edge to edge.
+   Two borders positioned separately land on different device pixels at fractional zoom and show a
+   step where they meet. Its y is the bottom of the sidebar head: .toc's 28px + --head-h. */
+.layout::before{
+  content:""; position:absolute; left:0; right:0; z-index:6; pointer-events:none;
+  top:calc(28px + var(--head-h, 0px) - 1px); height:1px; background:var(--line);
+}
+.toc{
+  min-height:0; display:flex; flex-direction:column;
+  padding:28px 0 16px var(--gutter);
+  border-right:1px solid var(--line);
+}
+.sidebar-head{flex:none; padding:0 20px 22px 12px; margin-bottom:20px}  /* divider: .layout::before */
+.sidebar-head h1{margin:0; font-size:18px; font-weight:700; line-height:1.35; color:var(--ink); letter-spacing:-.01em}
+.toc-scroll{min-height:0; overflow-y:auto; padding:0 24px 24px 0}
+.viewer{
+  min-width:0; min-height:0; display:flex; flex-direction:column;
+  background:var(--sheet);
+}
+/* desktop keeps its controls in the sidebar; the toolbar is the mobile header */
+.viewer-toolbar{
+  flex:none; min-height:var(--header-h); display:none; justify-content:flex-end;
+  align-items:center; gap:12px; padding:9px var(--gutter) 9px 32px;
+  border-bottom:1px solid var(--line); background:var(--sheet);
+}
+.viewer-leading{display:none}
+.viewer-actions{display:flex; align-items:center; gap:8px}
+.viewer-actions .rev{
+  font-size:11.5px; color:var(--ink-4); white-space:nowrap; margin-right:6px;
+}
+.icon-btn{
+  width:34px; height:34px; flex:none; display:grid; place-items:center;
+  border:0; border-radius:var(--r-sm); background:transparent;
+  color:var(--ink-3); font-size:16px; cursor:pointer;
+  text-decoration:none; transition:background .15s ease,color .15s ease;
+}
+.icon-btn:hover{background:var(--chip); color:var(--ink)}
+.icon-btn svg{
+  width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.close-btn{margin-left:3px; border-left:1px solid var(--line)}
+.toc-toggle{display:none}
+
+/* ─────────────────────────────  toc  ───────────────────────────── */
+.toc h2{
+  margin:0 0 14px; padding-left:13px; font-size:10.5px; font-weight:600; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-4);
+}
+/* unnumbered on purpose: headings often carry their own numbers, and "1. 1." reads as a bug */
+.toc ol{list-style:none; margin:0; padding:0}
+.toc a{
+  display:block; padding:7px 12px; font-size:13.5px; color:var(--toc-ink);
+  text-decoration:none; border-radius:var(--r-sm);
+  transition:color .15s ease, background .15s ease;
+}
+.toc a:hover{color:var(--toc-ink); background:var(--chip)}
+.toc a:active{background:var(--accent-soft)}
+.toc a[aria-current="true"]{background:var(--accent-soft)}
+
+/* ─────────────────────────────  search  ───────────────────────── */
+.toc-search{position:relative; flex:none; margin:0 24px 18px 0}
+.toc-search svg{
+  position:absolute; left:11px; top:50%; width:15px; height:15px; transform:translateY(-50%);
+  fill:none; stroke:var(--ink-4); stroke-width:2; stroke-linecap:round; pointer-events:none;
+}
+.toc-search input{
+  width:100%; height:36px; padding:0 10px 0 33px;
+  border:1px solid var(--line); border-radius:var(--r-sm);
+  background:var(--sunken); color:var(--ink); font:inherit; font-size:13px;
+  transition:border-color .15s ease, background .15s ease;
+}
+.toc-search input::placeholder{color:var(--ink-4)}
+.toc-search input:focus{outline:none; border-color:var(--accent-400); background:var(--sheet)}
+/* while a query is typed, the results replace the contents list */
+.toc.is-searching .toc-scroll>h2,.toc.is-searching #toc-list{display:none}
+.search-meta{
+  margin:0 0 10px; padding-left:13px; font-size:10.5px; font-weight:600; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-4);
+}
+.search-results ol{list-style:none; margin:0; padding:0}
+.search-results .hit-title{display:block; font-weight:600; color:var(--ink)}
+.search-results .hit-snippet{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  margin-top:2px; font-size:12px; line-height:1.5; color:var(--ink-3);
+}
+mark{padding:0 1px; border-radius:3px; background:var(--warn-bg); color:var(--warn-ink)}
+
+/* ─────────────────────────────  sections  ───────────────────────── */
+.body{
+  flex:1; min-width:0; min-height:0; overflow-y:auto;
+  /* no top padding: the pinned section heading carries the 28px that matches .toc's */
+  --body-pl:36px;
+  padding:0 var(--gutter) 72px var(--body-pl);
+}
+/* only the selected section is in the document flow */
+.sec{display:none; margin:0}
+.sec.is-active{display:block}
+body.show-all .sec{display:block; margin:0 0 64px}
+/* The section heading is pinned to the top of the pane and ends exactly on the shared divider
+   (.layout::before): 28px + --head-h, measured by the script. It reaches left through the body
+   padding so its background hides content scrolling beneath it right up to the rail. */
+.sec>h2{
+  position:sticky; top:0; z-index:5; background:var(--sheet);
+  margin:0 0 20px calc(-1 * var(--body-pl)); padding:12px 0 12px var(--body-pl);
+  min-height:calc(var(--head-h, 0px) + 28px);
+  /* set like the sidebar title (.sidebar-head h1), centred in the header band */
+  display:flex; flex-direction:column; justify-content:center;
+  font-size:18px; font-weight:700; letter-spacing:-.01em; line-height:1.35; color:var(--ink);
+}
+.sec h3{margin:34px 0 12px; font-size:16px; font-weight:600; color:var(--ink); letter-spacing:-.01em}
+.sec p{margin:0 0 16px; max-width:76ch}
+.sec>ul,.sec>ol{margin:0 0 16px; padding-left:20px; max-width:76ch}
+.sec>ul li,.sec>ol li{margin:6px 0}
+.sec>*:last-child{margin-bottom:0}
+strong{color:var(--ink); font-weight:600}
+
+p code,li code,td code,.card code,.note code{
+  padding:1px 5px; border-radius:5px; background:var(--chip); color:var(--chip-ink);
+  font-size:.86em; white-space:nowrap;
+}
+
+/* ─────────────────────────────  pills  ───────────────────────────── */
+.pill{
+  display:inline-block; padding:1.5px 9px; border-radius:999px; white-space:nowrap;
+  font-size:11px; font-weight:600; letter-spacing:.02em;
+  background:var(--todo-bg); color:var(--todo-ink);
+}
+.pill.ok{background:var(--ok-bg); color:var(--ok-ink)}
+.pill.warn{background:var(--warn-bg); color:var(--warn-ink)}
+.pill.risk{background:var(--risk-bg); color:var(--risk-ink)}
+
+/* ─────────────────────────────  cards  ───────────────────────────── */
+.grid{display:grid; gap:14px; margin:0 0 16px}
+.grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{
+  padding:16px 18px; border:1px solid var(--line); border-radius:var(--r-lg);
+  background:var(--sunken); min-width:0;
+}
+.card .label{
+  margin:0 0 8px; font-size:10.5px; font-weight:600; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--accent-600);
+}
+.card .title{margin:0 0 6px; font-size:15.5px; font-weight:600; color:var(--ink)}
+.card p{margin:0; font-size:13.5px; color:var(--ink-3)}
+.card ul{margin:0; padding-left:18px; font-size:13.5px; color:var(--ink-3)}
+.card li{margin:4px 0}
+.card li::marker{color:var(--ink-4)}
+
+.note{
+  --note-color:var(--note-blue);
+  position:relative; margin:0 0 12px; padding:14px 18px 14px 24px;
+  border-radius:var(--r-lg); background:var(--sunken);
+}
+/* same trick: an inset rounded bar instead of a border that would taper */
+.note::before{
+  content:""; position:absolute; left:9px; top:12px; bottom:12px; width:3px;
+  border-radius:999px; background:var(--note-color);
+}
+.note h4{margin:0 0 4px; font-size:14.5px; font-weight:600; color:var(--ink)}
+.note p{margin:0; font-size:13.5px; color:var(--ink-3); max-width:none}
+.note.green{--note-color:var(--note-green)}
+.note.purple{--note-color:var(--note-purple)}
+.note.amber{--note-color:var(--note-amber)}
+.note.gray{--note-color:var(--note-gray)}
+.note.red{--note-color:var(--note-red)}
+
+/* ─────────────────────────────  code  ───────────────────────────── */
+pre{
+  margin:0 0 16px; padding:18px 20px; overflow:auto; border-radius:var(--r-lg);
+  background:var(--code-bg); color:var(--code-ink);
+  font-size:12.5px; line-height:1.65; tab-size:2;
+}
+pre .k{color:var(--code-key)}      /* key / identifier */
+pre .s{color:var(--code-str)}      /* string / value */
+pre .c{color:var(--code-punc)}     /* comment / muted */
+
+/* ─────────────────────────────  table  ───────────────────────────── */
+.table-wrap{
+  margin:0 0 16px; overflow:auto; border:1px solid var(--line);
+  border-radius:var(--r-lg);   /* clips the header fill to all four corners */
+}
+table{width:100%; border-collapse:collapse; font-size:13.5px}
+thead th{
+  padding:11px 16px; text-align:left; white-space:nowrap;
+  font-size:10.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-4); background:var(--sunken); border-bottom:1px solid var(--line);
+}
+tbody td{padding:11px 16px; border-bottom:1px solid var(--line-soft); color:var(--ink-3); vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+tbody td:first-child{color:var(--ink); font-weight:500}
+
+/* ─────────────────────────────  diagram  ───────────────────────── */
+.figure{
+  position:relative; margin:0 0 16px; padding:22px;
+  border:1px solid var(--line); border-radius:var(--r-xl);
+  background:var(--sunken); overflow:hidden;
+}
+.diagram-toolbar{
+  display:flex; justify-content:flex-end; align-items:center; flex-wrap:wrap;
+  gap:6px; margin:-5px -5px 12px 0; position:relative; z-index:2;
+}
+.diagram-tool{
+  display:inline-grid; place-items:center; width:34px; height:34px;
+  padding:0; border:1px solid var(--line); border-radius:var(--r-sm);
+  background:var(--sheet); color:var(--ink-2); cursor:pointer;
+}
+.diagram-tool:hover:not(:disabled){color:var(--accent-600); border-color:var(--accent-400)}
+.diagram-tool:disabled{opacity:.35; cursor:not-allowed}
+.diagram-tool[aria-expanded="true"]{color:var(--accent-600); background:var(--accent-soft)}
+.diagram-tool svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.diagram-zoom-level{min-width:44px; font:500 11px/1 "JetBrains Mono",monospace; color:var(--ink-3); text-align:center}
+.diagram-wheel-wrap{position:relative}
+.diagram-wheel-panel{
+  position:absolute; z-index:5; top:calc(100% + 7px); right:0;
+  width:245px; padding:14px; border:1px solid var(--line);
+  border-radius:var(--r-md); background:var(--sheet); box-shadow:var(--shadow);
+}
+.diagram-wheel-panel[hidden]{display:none}
+.diagram-wheel-panel label{display:block; color:var(--ink-2); font-size:12px; font-weight:600; margin-bottom:7px}
+.diagram-wheel-panel select{
+  width:100%; padding:8px; border:1px solid var(--line); border-radius:var(--r-sm);
+  color:var(--ink); background:var(--sunken); font-size:12px;
+}
+.diagram-wheel-panel p{color:var(--ink-3); font-size:11px; line-height:1.5; margin:9px 0 0}
+.diagram-viewport{
+  display:flex; align-items:center; justify-content:center;
+  min-height:145px; width:100%; overflow:hidden;
+  border-radius:var(--r-sm);
+}
+.diagram-viewport.is-pannable{cursor:grab; touch-action:none}
+.diagram-viewport.is-dragging{cursor:grabbing}
+/* No will-change: it pins the diagram to a bitmap rasterised at 100%, so zooming in stretches pixels
+   and text goes soft. Without it the browser re-rasterises the vector at the zoom it settles on. */
+.diagram-canvas{width:100%; min-width:0; transform-origin:center center}
+.figure .mermaid{display:flex; justify-content:center; min-height:40px; width:100%}
+.figure .mermaid svg{display:block; max-width:100%; height:auto}
+.figure figcaption{margin-top:14px; text-align:center; font-size:12px; color:var(--ink-4)}
+.figure:fullscreen,.figure.diagram-fullscreen-fallback{
+  width:100vw; height:100vh; max-width:none; margin:0; padding:22px;
+  border:0; border-radius:0; background:var(--sheet);
+  display:flex; flex-direction:column;
+}
+.figure:fullscreen .diagram-viewport,.figure.diagram-fullscreen-fallback .diagram-viewport{
+  flex:1; min-height:0;
+}
+.figure.diagram-fullscreen-fallback{position:fixed; inset:0; z-index:1000}
+body.diagram-overlay-open{overflow:hidden}
+
+/* ─────────────────────────────  responsive  ───────────────────── */
+/* wide desktops: more air, a roomier contents rail */
+@media (min-width:1600px){
+  :root{--toc-w:340px; --gutter:40px}
+  .toc-scroll{padding-right:32px}
+  .toc-search{margin-right:32px}
+  .body{--body-pl:44px}
+  .viewer-toolbar{padding-left:44px}
+}
+@media (max-width:1200px){
+  :root{--gutter:20px; --toc-w:250px}
+  .body{--body-pl:28px}
+  .viewer-toolbar{padding-left:28px}
+  .toc-scroll{padding-right:20px}
+  .toc-search{margin-right:20px}
+}
+@media (max-width:900px){
+  :root{--gutter:16px; --header-h:58px}
+  .layout{display:block}
+  .viewer{height:100%; min-height:0}
+  .viewer-toolbar{
+    display:flex; min-height:var(--header-h); justify-content:space-between;
+    padding:8px var(--gutter);
+  }
+  .viewer-leading{display:flex; min-width:0; align-items:center; gap:8px}
+  .viewer-title{
+    min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    font-size:15px; font-weight:700; color:var(--ink);
+  }
+  .viewer-actions{gap:2px}
+  .viewer-actions .rev{margin:0 5px 0 0; font-size:10.5px}
+  .icon-btn{width:32px; height:32px}
+  .toc-toggle{display:grid}
+  .toc{
+    display:none; position:absolute; top:var(--header-h); left:0; right:0;
+    z-index:30; max-height:calc(100dvh - var(--header-h));
+    padding:10px var(--gutter) 16px; border-right:0;
+    border-bottom:1px solid var(--line);
+    background:var(--sheet); box-shadow:0 16px 26px -17px rgba(0,0,0,.25);
+  }
+  .toc.is-expanded{display:flex}
+  .sidebar-head{display:none}
+  .toc-search{margin:2px 0 10px}
+  .toc-scroll{
+    flex:1; min-height:0; overflow-y:auto;
+    padding:0; overscroll-behavior:contain;
+  }
+  .toc h2{margin:3px 0 8px; padding-left:11px}
+  .toc ol{display:flex; flex-direction:column; gap:2px}
+  .toc a{padding:9px 11px; border-radius:var(--r-sm)}
+  .body{padding:0 var(--gutter) 64px}
+  /* no sidebar to meet: the heading carries its own underline */
+  .layout::before{display:none}
+  .sec>h2{min-height:0; margin-left:0; padding:26px 0 12px; border-bottom:1px solid var(--line)}
+  .grid.cols-2,.grid.cols-3{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:420px){
+  .viewer-actions .rev{font-size:10px; margin-right:0}
+  .viewer-title{font-size:14px}
+  .viewer-leading{gap:3px}
+}
+
+/* Mobile-only fixed section navigation. */
+.section-home-link{
+  appearance:none; border:0; background:transparent; color:inherit;
+  font:inherit; letter-spacing:inherit; text-align:inherit; padding:0;
+  cursor:pointer;
+}
+.section-home-link:hover{text-decoration:underline; text-underline-offset:3px}
+.section-home-link:focus-visible{outline:2px solid var(--accent-600); outline-offset:3px; border-radius:2px}
+
+.mobile-section-nav{display:none}
+@media (max-width:900px){
+  .mobile-section-nav{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    flex:none; padding:10px var(--gutter) calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid var(--line); background:var(--sheet);
+  }
+  .mobile-section-nav button{
+    min-width:100px; min-height:44px; padding:9px 18px;
+    border:1px solid var(--line); border-radius:var(--r-sm);
+    background:var(--sheet); color:var(--ink); font-size:13px; font-weight:600;
+    cursor:pointer;
+  }
+  .mobile-section-nav button:disabled{opacity:.4; cursor:not-allowed}
+  .mobile-section-nav button:focus-visible{outline:2px solid var(--accent-600); outline-offset:2px}
+}
+@media print{.mobile-section-nav{display:none !important}}
+
+/* ─────────────────────────────  print  ───────────────────────── */
+@media print{
+  :root{--page:#fff; --sheet:#fff; --shadow:none}
+  html,body,.sheet,.viewer,.body{height:auto; overflow:visible}
+  .layout{display:block; padding:0 8mm}
+  .toc{display:block; position:static; max-height:none; margin:0; padding:0; border:0; box-shadow:none}
+  .sidebar-head{display:block; padding:0 0 5mm; margin:0; border-bottom:1px solid var(--line)}
+  .toc-scroll,.toc-toggle,.toc-search{display:none !important}
+  mark.search-hit{background:none; color:inherit; padding:0}
+  .viewer-toolbar{display:none !important}
+  .body{padding:0; border:0}
+  .layout::before{display:none}
+  .sec>h2{position:static; min-height:0; margin-left:0; padding:0 0 12px; border-bottom:1px solid var(--line)}
+  .sec{display:block !important; margin:0 0 32px; break-inside:avoid-page}
+  .diagram-toolbar{display:none !important}
+  .diagram-viewport{min-height:0; overflow:visible; display:block}
+  .diagram-canvas{transform:none !important; width:100%}
+  .figure:fullscreen,.figure.diagram-fullscreen-fallback{
+    position:static; width:auto; height:auto; display:block; padding:22px;
+    border:1px solid var(--line); border-radius:var(--r-xl);
+  }
+  pre{background:#0f172a !important; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+
+/* document accent override */
+:root{
+  --accent-400:#38bdf8;
+  --accent-500:#0284c7;
+  --accent-600:#0369a1;
+  --accent-soft:#e0f2fe;
+}
+
+
+/* visual views */
+/* Tabs between a section's views. Appended after docs-shell.css, so it uses its tokens. */
+.vsummary{margin:0 0 18px; color:var(--ink-3); max-width:76ch}
+.vempty{margin:0; padding:28px; text-align:center; color:var(--ink-4);
+  border:1px dashed var(--line); border-radius:var(--r-xl)}
+.vtabs{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 14px}
+.vtab{
+  padding:7px 14px; border:1px solid var(--line); border-radius:999px;
+  background:var(--sheet); color:var(--ink-3); cursor:pointer;
+  font:inherit; font-size:13px; font-weight:500; line-height:1.2;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.vtab:hover{color:var(--ink); background:var(--chip)}
+.vtab[aria-selected="true"]{color:var(--accent-600); background:var(--accent-soft); border-color:var(--accent-400)}
+.vtab:focus-visible{outline:2px solid var(--accent-500); outline-offset:2px}
+.vtitle{margin:0 0 12px !important}
+.vviews.has-tabs .vtitle{display:none}
+.vcaption{margin:-6px 0 16px !important; text-align:center; font-size:12px; color:var(--ink-4)}
+.vpanel>*:last-child{margin-bottom:0}
+body.show-all .vpanel[hidden]{display:block; margin-top:28px}
+body.show-all .vviews.has-tabs .vtitle{display:block}
+@media print{
+  .vtabs{display:none !important}
+  .vpanel[hidden]{display:block !important; margin-top:24px}
+  .vviews.has-tabs .vtitle{display:block !important}
+}
+</style>
+<meta name="theme-color" content="#474bd1">
+<link rel="apple-touch-icon" href="./pwa-icon-192.png">
+<link rel="manifest" href="./manifest.webmanifest">
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="layout">
+
+    <!-- ══ document sidebar (desktop) and collapsible contents (mobile) ══ -->
+    <nav class="toc" aria-label="Contents">
+      <div class="sidebar-head">
+        <h1><button type="button" class="section-home-link" aria-label="Go to first section">MCP 2.0 · Visual Field Guide</button></h1>
+      </div>
+      <div class="toc-search" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="doc-search" placeholder="Search this document" aria-label="Search this document"
+               title="Search (/ or Ctrl+K)" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="toc-scroll" id="toc-panel">
+        <h2>Contents</h2>
+        <ol id="toc-list"></ol>
+        <div class="search-results" id="search-results" hidden></div>
+      </div>
+    </nav>
+    <!-- Before first paint: the section heading takes the sidebar head's height so the two dividers
+         meet as one line. The module script below waits on mermaid's download, so it would set this
+         late and the heading would jump; it only keeps the value in step afterwards. -->
+    <script>
+      document.documentElement.style.setProperty("--head-h",
+        document.querySelector(".sidebar-head").getBoundingClientRect().height + "px");
+    </script>
+
+    <!-- ══ full-height document viewer ══ -->
+    <!-- The template's close button links back to a docs index; a doc site is
+         its own index.html, so it is left out here. -->
+    <div class="viewer">
+      <header class="viewer-toolbar" aria-label="Document toolbar">
+        <div class="viewer-leading">
+          <button class="icon-btn toc-toggle" id="toc-toggle" type="button"
+                  aria-expanded="false" aria-controls="toc-panel"
+                  title="Show contents" aria-label="Show contents">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <button type="button" class="viewer-title section-home-link" aria-label="Go to first section">MCP 2.0 · Visual Field Guide</button>
+        </div>
+        <div class="viewer-actions">
+          <span class="rev">November 2026 · Released specification</span>
+          <button class="icon-btn theme-btn" type="button" title="Toggle theme" aria-label="Toggle theme">◐</button>
+          <button class="icon-btn print-btn" type="button" title="Print / PDF (all sections)" aria-label="Print">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <path d="M7 14h10v7H7zM17 11h.01"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="body">
+    <!-- ══ MCP 2.0 at a glance ══ -->
+    <section class="sec" id="overview">
+      <h2>MCP 2.0 at a glance</h2>
+      <p class="vsummary">A visual map of the July 28, 2026 MCP specification—stateless by default, extensible by design.</p>
+      <div class="vviews has-tabs">
+      <div class="vtabs" role="tablist" aria-label="Views">
+        <button type="button" role="tab" class="vtab" id="overview-tab-1" aria-controls="overview-view-1" aria-selected="true" tabindex="0" data-kind="mindmap" title="Mind map">Feature landscape</button>
+        <button type="button" role="tab" class="vtab" id="overview-tab-2" aria-controls="overview-view-2" aria-selected="false" tabindex="-1" data-kind="table" title="Table">Release highlights</button>
+      </div>
+      <div class="vpanel" id="overview-view-1" data-kind="mindmap" role="tabpanel" aria-labelledby="overview-tab-1">
+      <h3 class="vtitle">Feature landscape</h3>
+      <figure class="figure">
+        <div class="mermaid">
+mindmap
+  root((MCP 2026-07-28))
+    Stateless core
+      Self-describing requests
+      No session handshake
+      Optional discovery
+    HTTP at scale
+      Header routing
+      Cacheable catalogs
+      Load balancing
+    Agent interactions
+      Multi-round-trip
+      Subscriptions
+    Extensions
+      Tasks
+      MCP Apps
+      Enterprise auth
+    Security
+      OAuth alignment
+      Issuer validation
+      Client metadata
+        </div>
+      </figure>
+      </div>
+      <div class="vpanel" id="overview-view-2" data-kind="table" role="tabpanel" aria-labelledby="overview-tab-2" hidden>
+      <h3 class="vtitle">Release highlights</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Area</th><th>What changed</th><th>Why it matters</th></tr></thead>
+          <tbody>
+              <tr><td>Core</td><td>Stateless request/response</td><td>Simpler horizontal scaling</td></tr>
+              <tr><td>Transport</td><td>Mcp-Method and Mcp-Name headers</td><td>Gateway routing and policy</td></tr>
+              <tr><td>Interaction</td><td>Multi Round-Trip Requests</td><td>Human and model input without open bidirectional streams</td></tr>
+              <tr><td>Catalogs</td><td>Cache hints and deterministic ordering</td><td>Lower overhead and stable prompt caches</td></tr>
+              <tr><td>Ecosystem</td><td>Extensions framework</td><td>Optional, interoperable capabilities</td></tr>
+              <tr><td>Security</td><td>OAuth/OIDC hardening</td><td>Safer client identity and authorization</td></tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ══ Stateless architecture ══ -->
+    <section class="sec" id="architecture">
+      <h2>Stateless architecture</h2>
+      <p class="vsummary">Each request identifies its protocol version and capabilities so any healthy replica can serve it.</p>
+      <div class="vviews has-tabs">
+      <div class="vtabs" role="tablist" aria-label="Views">
+        <button type="button" role="tab" class="vtab" id="architecture-tab-1" aria-controls="architecture-view-1" aria-selected="true" tabindex="0" data-kind="flowchart" title="Flow chart">Request path</button>
+        <button type="button" role="tab" class="vtab" id="architecture-tab-2" aria-controls="architecture-view-2" aria-selected="false" tabindex="-1" data-kind="sequence" title="Sequence">Stateless exchange</button>
+      </div>
+      <div class="vpanel" id="architecture-view-1" data-kind="flowchart" role="tabpanel" aria-labelledby="architecture-tab-1">
+      <h3 class="vtitle">Request path</h3>
+      <figure class="figure">
+        <div class="mermaid">
+flowchart LR
+  U[AI application] --&gt; C[MCP client]
+  C --&gt;|POST plus MCP headers| G[API gateway]
+  G --&gt; L[Load balancer]
+  L --&gt; S1[MCP server A]
+  L --&gt; S2[MCP server B]
+  S1 --&gt; D[(Data and tools)]
+  S2 --&gt; D
+  C -.-&gt;|Optional discover| G
+        </div>
+      </figure>
+      </div>
+      <div class="vpanel" id="architecture-view-2" data-kind="sequence" role="tabpanel" aria-labelledby="architecture-tab-2" hidden>
+      <h3 class="vtitle">Stateless exchange</h3>
+      <figure class="figure">
+        <div class="mermaid">
+sequenceDiagram
+  participant C as MCP Client
+  participant G as Gateway
+  participant S as MCP Server
+  opt Capability discovery
+    C-&gt;&gt;G: server/discover
+    G-&gt;&gt;S: Discovery request
+    S--&gt;&gt;C: Server capabilities
+  end
+  C-&gt;&gt;G: POST tools/call + protocol _meta
+  Note over C,G: Mcp-Method / Mcp-Name headers
+  G-&gt;&gt;S: Route by headers
+  S--&gt;&gt;C: JSON-RPC result + server _meta
+        </div>
+      </figure>
+      </div>
+      </div>
+    </section>
+
+    <!-- ══ Multi Round-Trip Requests ══ -->
+    <section class="sec" id="mrtr">
+      <h2>Multi Round-Trip Requests</h2>
+      <p class="vsummary">A server can request more input and the client can resume the operation through explicit round trips.</p>
+      <div class="vviews has-tabs">
+      <div class="vtabs" role="tablist" aria-label="Views">
+        <button type="button" role="tab" class="vtab" id="mrtr-tab-1" aria-controls="mrtr-view-1" aria-selected="true" tabindex="0" data-kind="sequence" title="Sequence">Human in the loop</button>
+        <button type="button" role="tab" class="vtab" id="mrtr-tab-2" aria-controls="mrtr-view-2" aria-selected="false" tabindex="-1" data-kind="flowchart" title="Flow chart">Decision flow</button>
+      </div>
+      <div class="vpanel" id="mrtr-view-1" data-kind="sequence" role="tabpanel" aria-labelledby="mrtr-tab-1">
+      <h3 class="vtitle">Human in the loop</h3>
+      <figure class="figure">
+        <div class="mermaid">
+sequenceDiagram
+  participant U as User
+  participant C as MCP Client
+  participant S as MCP Server
+  C-&gt;&gt;S: tools/call
+  S--&gt;&gt;C: input_required with request details
+  C-&gt;&gt;U: Request confirmation or information
+  U--&gt;&gt;C: Provide input
+  C-&gt;&gt;S: Continue request with supplied input
+  S--&gt;&gt;C: Completed result
+        </div>
+      </figure>
+      </div>
+      <div class="vpanel" id="mrtr-view-2" data-kind="flowchart" role="tabpanel" aria-labelledby="mrtr-tab-2" hidden>
+      <h3 class="vtitle">Decision flow</h3>
+      <figure class="figure">
+        <div class="mermaid">
+flowchart TD
+  A[Client sends request] --&gt; B[Server evaluates]
+  B --&gt; C{More input needed?}
+  C --&gt;|No| D[Return result]
+  C --&gt;|Yes| E[Return input_required]
+  E --&gt; F[Client obtains input]
+  F --&gt; G[Client retries with input]
+  G --&gt; B
+        </div>
+      </figure>
+      </div>
+      </div>
+    </section>
+
+    <!-- ══ Extensions: Apps, Tasks and enterprise auth ══ -->
+    <section class="sec" id="extensions">
+      <h2>Extensions: Apps, Tasks and enterprise auth</h2>
+      <p class="vsummary">The core protocol stays lean while negotiated extensions add specialized capabilities.</p>
+      <div class="vviews has-tabs">
+      <div class="vtabs" role="tablist" aria-label="Views">
+        <button type="button" role="tab" class="vtab" id="extensions-tab-1" aria-controls="extensions-view-1" aria-selected="true" tabindex="0" data-kind="mindmap" title="Mind map">Extension ecosystem</button>
+        <button type="button" role="tab" class="vtab" id="extensions-tab-2" aria-controls="extensions-view-2" aria-selected="false" tabindex="-1" data-kind="flowchart" title="Flow chart">Capability negotiation</button>
+      </div>
+      <div class="vpanel" id="extensions-view-1" data-kind="mindmap" role="tabpanel" aria-labelledby="extensions-tab-1">
+      <h3 class="vtitle">Extension ecosystem</h3>
+      <figure class="figure">
+        <div class="mermaid">
+mindmap
+  root((MCP Extensions))
+    MCP Apps
+      Interactive interfaces
+      Rich tool experiences
+    Tasks
+      Long-running operations
+      Task status
+      Result retrieval
+    Enterprise Managed Authorization
+      Organization policies
+      Managed identity
+    Custom extensions
+      Capability negotiation
+      Versioned contracts
+        </div>
+      </figure>
+      </div>
+      <div class="vpanel" id="extensions-view-2" data-kind="flowchart" role="tabpanel" aria-labelledby="extensions-tab-2" hidden>
+      <h3 class="vtitle">Capability negotiation</h3>
+      <figure class="figure">
+        <div class="mermaid">
+flowchart LR
+  A[Client declares extensions] --&gt; C[Compatible capabilities]
+  B[Server declares extensions] --&gt; C
+  C --&gt; D{Extension supported?}
+  D --&gt;|Yes| E[Enable extended workflow]
+  D --&gt;|No| F[Use core MCP behavior]
+        </div>
+      </figure>
+      </div>
+      </div>
+    </section>
+
+    <!-- ══ HTTP routing and discovery ══ -->
+    <section class="sec" id="transport">
+      <h2>HTTP routing and discovery</h2>
+      <p class="vsummary">Method and tool names are visible to infrastructure without parsing the JSON-RPC body.</p>
+      <div class="vviews has-tabs">
+      <div class="vtabs" role="tablist" aria-label="Views">
+        <button type="button" role="tab" class="vtab" id="transport-tab-1" aria-controls="transport-view-1" aria-selected="true" tabindex="0" data-kind="flowchart" title="Flow chart">Gateway policy</button>
+        <button type="button" role="tab" class="vtab" id="transport-tab-2" aria-controls="transport-view-2" aria-selected="false" tabindex="-1" data-kind="table" title="Table">Transport changes</button>
+      </div>
+      <div class="vpanel" id="transport-view-1" data-kind="flowchart" role="tabpanel" aria-labelledby="transport-tab-1">
+      <h3 class="vtitle">Gateway policy</h3>
+      <figure class="figure">
+        <div class="mermaid">
+flowchart TD
+  A[HTTP POST] --&gt; B[Read Mcp-Method and Mcp-Name]
+  B --&gt; C{Authorized route?}
+  C --&gt;|No| D[Reject request]
+  C --&gt;|Yes| E[Select backend replica]
+  E --&gt; F[Execute JSON-RPC method]
+  F --&gt; G[Return response]
+        </div>
+      </figure>
+      </div>
+      <div class="vpanel" id="transport-view-2" data-kind="table" role="tabpanel" aria-labelledby="transport-tab-2" hidden>
+      <h3 class="vtitle">Transport changes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Earlier pattern</th><th>2026-07-28 pattern</th></tr></thead>
+          <tbody>
+              <tr><td>Initialize handshake</td><td>Self-describing request metadata</td></tr>
+              <tr><td>Protocol sessions and sticky routing</td><td>Stateless server instances</td></tr>
+              <tr><td>Inspect request body for routing</td><td>Mcp-Method and Mcp-Name headers</td></tr>
+              <tr><td>Continuously open streams for reverse calls</td><td>Multi Round-Trip Requests</td></tr>
+              <tr><td>Transport-level server push</td><td>Explicit subscription/listen model</td></tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ══ Cacheable catalogs and predictable ordering ══ -->
+    <section class="sec" id="catalogs">
+      <h2>Cacheable catalogs and predictable ordering</h2>
+      <p class="vsummary">Catalog results are designed for repeatability, reuse and stable model context.</p>
+      <div class="vviews has-tabs">
+      <div class="vtabs" role="tablist" aria-label="Views">
+        <button type="button" role="tab" class="vtab" id="catalogs-tab-1" aria-controls="catalogs-view-1" aria-selected="true" tabindex="0" data-kind="sequence" title="Sequence">Cache-aware listing</button>
+        <button type="button" role="tab" class="vtab" id="catalogs-tab-2" aria-controls="catalogs-view-2" aria-selected="false" tabindex="-1" data-kind="flowchart" title="Flow chart">Catalog lifecycle</button>
+      </div>
+      <div class="vpanel" id="catalogs-view-1" data-kind="sequence" role="tabpanel" aria-labelledby="catalogs-tab-1">
+      <h3 class="vtitle">Cache-aware listing</h3>
+      <figure class="figure">
+        <div class="mermaid">
+sequenceDiagram
+  participant C as Client
+  participant K as Cache
+  participant S as MCP Server
+  C-&gt;&gt;K: Need tools/list
+  alt Cached response valid
+    K--&gt;&gt;C: Ordered tool catalog
+  else Cache expired
+    C-&gt;&gt;S: tools/list
+    S--&gt;&gt;C: Deterministic list + cache hints
+    C-&gt;&gt;K: Store until TTL
+  end
+        </div>
+      </figure>
+      </div>
+      <div class="vpanel" id="catalogs-view-2" data-kind="flowchart" role="tabpanel" aria-labelledby="catalogs-tab-2" hidden>
+      <h3 class="vtitle">Catalog lifecycle</h3>
+      <figure class="figure">
+        <div class="mermaid">
+flowchart LR
+  A[tools/list] --&gt; B[Deterministic ordering]
+  B --&gt; C[Cache TTL hints]
+  C --&gt; D[Client cache]
+  D --&gt; E[Reduced repeated calls]
+  D --&gt; F[Stable prompt prefixes]
+        </div>
+      </figure>
+      </div>
+      </div>
+    </section>
+
+    <!-- ══ Authentication and authorization ══ -->
+    <section class="sec" id="security">
+      <h2>Authentication and authorization</h2>
+      <p class="vsummary">The release hardens OAuth-style identity handling and shifts client onboarding toward metadata documents.</p>
+      <div class="vviews has-tabs">
+      <div class="vtabs" role="tablist" aria-label="Views">
+        <button type="button" role="tab" class="vtab" id="security-tab-1" aria-controls="security-view-1" aria-selected="true" tabindex="0" data-kind="flowchart" title="Flow chart">Security checkpoints</button>
+        <button type="button" role="tab" class="vtab" id="security-tab-2" aria-controls="security-view-2" aria-selected="false" tabindex="-1" data-kind="table" title="Table">Security changes</button>
+      </div>
+      <div class="vpanel" id="security-view-1" data-kind="flowchart" role="tabpanel" aria-labelledby="security-tab-1">
+      <h3 class="vtitle">Security checkpoints</h3>
+      <figure class="figure">
+        <div class="mermaid">
+flowchart TD
+  A[MCP client] --&gt; B[Read authorization server metadata]
+  B --&gt; C[Validate issuer identity]
+  C --&gt; D[Use client metadata document]
+  D --&gt; E[OAuth authorization]
+  E --&gt; F[Gateway validates credentials and scopes]
+  F --&gt; G[Authorized tool request]
+        </div>
+      </figure>
+      </div>
+      <div class="vpanel" id="security-view-2" data-kind="table" role="tabpanel" aria-labelledby="security-tab-2" hidden>
+      <h3 class="vtitle">Security changes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Capability</th><th>2026 specification focus</th></tr></thead>
+          <tbody>
+              <tr><td>Issuer validation</td><td>RFC 9207-based issuer checks</td></tr>
+              <tr><td>Client identity</td><td>Client metadata documents over dynamic registration</td></tr>
+              <tr><td>Enterprise authorization</td><td>Optional managed authorization extension</td></tr>
+              <tr><td>Gateway controls</td><td>Method and tool headers usable in policy</td></tr>
+              <tr><td>Least privilege</td><td>Enforce resource-specific authorization</td></tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ══ Migration from MCP 2025 to 2026 ══ -->
+    <section class="sec" id="migration">
+      <h2>Migration from MCP 2025 to 2026</h2>
+      <p class="vsummary">Review sessions, handshake, metadata, reverse calls and SDK compatibility before upgrading.</p>
+      <div class="vviews has-tabs">
+      <div class="vtabs" role="tablist" aria-label="Views">
+        <button type="button" role="tab" class="vtab" id="migration-tab-1" aria-controls="migration-view-1" aria-selected="true" tabindex="0" data-kind="flowchart" title="Flow chart">Upgrade plan</button>
+        <button type="button" role="tab" class="vtab" id="migration-tab-2" aria-controls="migration-view-2" aria-selected="false" tabindex="-1" data-kind="table" title="Table">Compatibility checklist</button>
+      </div>
+      <div class="vpanel" id="migration-view-1" data-kind="flowchart" role="tabpanel" aria-labelledby="migration-tab-1">
+      <h3 class="vtitle">Upgrade plan</h3>
+      <figure class="figure">
+        <div class="mermaid">
+flowchart TD
+  A[Inventory clients and servers] --&gt; B[Check SDK and protocol support]
+  B --&gt; C[Remove initialize and sessions for 2026]
+  C --&gt; D[Add protocol metadata per request]
+  D --&gt; E[Add standard HTTP routing headers]
+  E --&gt; F[Adapt reverse calls to MRTR]
+  F --&gt; G[Test extensions and authorization]
+  G --&gt; H[Run conformance and rollout]
+        </div>
+      </figure>
+      </div>
+      <div class="vpanel" id="migration-view-2" data-kind="table" role="tabpanel" aria-labelledby="migration-tab-2" hidden>
+      <h3 class="vtitle">Compatibility checklist</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Check</th><th>Recommendation</th><th>Priority</th></tr></thead>
+          <tbody>
+              <tr><td>Protocol version</td><td>Use 2026-07-28 with modern clients</td><td>Critical</td></tr>
+              <tr><td>Handshake</td><td>Do not initialize on modern protocol</td><td>Critical</td></tr>
+              <tr><td>Session state</td><td>Use explicit tool handles if needed</td><td>High</td></tr>
+              <tr><td>Request _meta</td><td>Send version and client capabilities</td><td>Critical</td></tr>
+              <tr><td>Tool listing</td><td>Verify ordering and TTL behavior</td><td>Medium</td></tr>
+              <tr><td>Extension negotiation</td><td>Enable only mutually supported features</td><td>Medium</td></tr>
+              <tr><td>Authorization</td><td>Validate issuer, client and scopes</td><td>High</td></tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ══ Reference sources and roadmap ══ -->
+    <section class="sec" id="resources">
+      <h2>Reference sources and roadmap</h2>
+      <p class="vsummary">Official release and specification documents are the source of truth; future roadmap work is separate from shipped functionality.</p>
+      <div class="vviews">
+      <div class="vpanel" id="resources-view-1" data-kind="table">
+      <h3 class="vtitle">Official references</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Source</th><th>Location</th><th>Scope</th></tr></thead>
+          <tbody>
+              <tr><td>Release announcement</td><td>blog.modelcontextprotocol.io/posts/2026-07-28/</td><td>Shipped July 2026 release</td></tr>
+              <tr><td>Specification changelog</td><td>modelcontextprotocol.io/specification/2026-07-28/changelog</td><td>Detailed normative changes</td></tr>
+              <tr><td>Specification overview</td><td>modelcontextprotocol.io/specification/2026-07-28/basic</td><td>Protocol components</td></tr>
+              <tr><td>Future roadmap</td><td>blog.modelcontextprotocol.io/posts/mcp-roadmap/</td><td>Upcoming directions, not shipped features</td></tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+      </div>
+    </section>
+      </main>
+      <nav class="mobile-section-nav" aria-label="Section navigation">
+        <button type="button" class="mobile-section-prev" aria-label="Previous section">Prev</button>
+        <button type="button" class="mobile-section-next" aria-label="Next section">Next</button>
+      </nav>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
+
+/* ── theme: light → dark → auto, persisted ── */
+const root = document.documentElement, themeBtns = document.querySelectorAll(".theme-btn");
+const GLYPH = { light:"☀", dark:"☾", auto:"◐" };
+let mode = "auto";
+try { mode = localStorage.getItem("doc-theme") || "auto"; } catch {}
+
+function isDark(){
+  return root.dataset.theme === "dark" ||
+    (mode === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+}
+function applyTheme(next, render = true){
+  mode = next;
+  if (next === "auto") root.removeAttribute("data-theme");
+  else root.dataset.theme = next;
+  for (const b of themeBtns){ b.textContent = GLYPH[next]; b.title = `Theme: ${next}`; }
+  try { localStorage.setItem("doc-theme", next); } catch {}
+  if (render) reRender();
+}
+themeBtns.forEach(b => b.addEventListener("click", () => applyTheme({ light:"dark", dark:"auto", auto:"light" }[mode])));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (mode === "auto") reRender(); });
+
+/* ── mermaid: keep the sources so the theme can be re-applied ── */
+const figures = [...document.querySelectorAll(".mermaid")];
+figures.forEach((el, i) => { el.dataset.src = el.textContent.trim(); el.dataset.i = i; });
+
+/* Every diagram shares the same toolbar and interaction model. */
+const diagramStates = new WeakMap();
+const renderTasks = new WeakMap();
+let diagramRenderQueue = Promise.resolve();
+const MIN_ZOOM = .5, MAX_ZOOM = 30, ZOOM_STEP = 1.25;
+let renderId = 0;
+const ICONS = {
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  minus:'<path d="M5 12h14"/>',
+  reset:'<path d="M3 12a9 9 0 1 0 3-6.7M3 3v6h6"/>',
+  fullscreen:'<path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/>',
+  minimize:'<path d="M3 8h5V3m13 5h-5V3M3 16h5v5m13-5h-5v5"/>',
+  direction:'<path d="M3 7h17m-4-4 4 4-4 4M7 3v17m-4-4 4 4 4-4"/>',
+  download:'<path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/>'
+};
+const icon = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+function applyDiagramTransform(state){
+  state.canvas.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.zoom})`;
+  state.level.textContent = `${Math.round(state.zoom * 100)}%`;
+  state.viewport.classList.toggle("is-pannable", canPan(state));
+  state.zoomIn.disabled = state.zoom >= MAX_ZOOM;
+  state.zoomOut.disabled = state.zoom <= MIN_ZOOM;
+  state.reset.disabled = state.zoom === 1 && state.x === 0 && state.y === 0;
+}
+
+function setDiagramZoom(state, zoom, origin){
+  const next = clamp(zoom, MIN_ZOOM, MAX_ZOOM);
+  if (next === state.zoom) return;
+  if (origin){
+    // Keep the point under the pointer stationary while zooming.
+    const rect = state.viewport.getBoundingClientRect();
+    const cx = origin.x - rect.left - rect.width / 2;
+    const cy = origin.y - rect.top - rect.height / 2;
+    const factor = next / state.zoom;
+    state.x = cx - (cx - state.x) * factor;
+    state.y = cy - (cy - state.y) * factor;
+  }
+  state.zoom = next;
+  applyDiagramTransform(state);
+}
+
+function resetDiagram(state){
+  state.zoom = 1;
+  state.x = state.y = 0;
+  applyDiagramTransform(state);
+}
+
+function makeDiagramButton(name, title, iconName, action){
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "diagram-tool";
+  button.dataset.action = name;
+  button.setAttribute("aria-label", title);
+  button.title = title;
+  button.innerHTML = icon(iconName);
+  button.addEventListener("click", action);
+  return button;
+}
+
+function isDiagramFullscreen(figure){
+  return document.fullscreenElement === figure || figure.classList.contains("diagram-fullscreen-fallback");
+}
+
+// In the page a diagram only pans once zoomed in, so a drag over it still scrolls nothing away by
+// accident. Fullscreen has nothing else to drag, so there it moves freely at any zoom.
+function canPan(state){
+  return state.zoom > 1 || isDiagramFullscreen(state.figure);
+}
+
+function syncFullscreenControls(){
+  for (const state of diagramStatesList){
+    const active = isDiagramFullscreen(state.figure);
+    state.fullscreen.innerHTML = icon(active ? "minimize" : "fullscreen");
+    state.fullscreen.title = active ? "Exit fullscreen (Esc)" : "Fullscreen";
+    state.fullscreen.setAttribute("aria-label", state.fullscreen.title);
+    // Leaving fullscreen unzoomed: back to centre, since the page can't pan it any more.
+    if (!active && state.zoom <= 1) state.x = state.y = 0;
+    applyDiagramTransform(state);
+  }
+}
+
+const diagramStatesList = [];
+async function toggleDiagramFullscreen(state){
+  const figure = state.figure;
+  if (figure.classList.contains("diagram-fullscreen-fallback")){
+    figure.classList.remove("diagram-fullscreen-fallback");
+    document.body.classList.remove("diagram-overlay-open");
+  } else if (document.fullscreenElement === figure){
+    await document.exitFullscreen();
+  } else {
+    try {
+      if (!figure.requestFullscreen) throw new Error("Fullscreen API not supported");
+      await figure.requestFullscreen();
+    } catch {
+      // Browsers blocking the Fullscreen API still get an in-page fullscreen view.
+      figure.classList.add("diagram-fullscreen-fallback");
+      document.body.classList.add("diagram-overlay-open");
+    }
+  }
+  syncFullscreenControls();
+}
+
+document.addEventListener("fullscreenchange", syncFullscreenControls);
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape"){
+    const fallback = document.querySelector(".figure.diagram-fullscreen-fallback");
+    if (fallback){
+      fallback.classList.remove("diagram-fullscreen-fallback");
+      document.body.classList.remove("diagram-overlay-open");
+      syncFullscreenControls();
+    }
+  }
+});
+
+function initializeDiagram(el){
+  if (diagramStates.has(el)) return diagramStates.get(el);
+  const figure = el.closest(".figure");
+  const viewport = document.createElement("div");
+  viewport.className = "diagram-viewport";
+  viewport.tabIndex = 0;
+  viewport.setAttribute("aria-label", "Diagram; zoom using the toolbar, drag to pan when zoomed");
+  const canvas = document.createElement("div");
+  canvas.className = "diagram-canvas";
+  el.before(viewport);
+  canvas.append(el);
+  viewport.append(canvas);
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "diagram-toolbar";
+  toolbar.setAttribute("role", "toolbar");
+  toolbar.setAttribute("aria-label", "Diagram controls");
+  figure.insertBefore(toolbar, viewport);
+  const state = {figure, viewport, canvas, zoom:1, x:0, y:0, wheelMode:"scroll"};
+  state.zoomOut = makeDiagramButton("zoom-out", "Zoom out", "minus", () => setDiagramZoom(state, state.zoom / ZOOM_STEP));
+  state.zoomIn = makeDiagramButton("zoom-in", "Zoom in", "plus", () => setDiagramZoom(state, state.zoom * ZOOM_STEP));
+  state.level = document.createElement("output");
+  state.level.className = "diagram-zoom-level";
+  state.level.setAttribute("aria-label", "Diagram zoom level");
+  state.reset = makeDiagramButton("reset", "Reset zoom and position", "reset", () => resetDiagram(state));
+  state.fullscreen = makeDiagramButton("fullscreen", "Fullscreen", "fullscreen", () => toggleDiagramFullscreen(state));
+  state.download = makeDiagramButton("download", "Download as image (PNG, light theme)", "download", () => downloadDiagram(el, state));
+  // Flowcharts support horizontal and vertical layout; other Mermaid types retain their native layout.
+  const sourceMatch = el.dataset.src.match(/^(\s*(?:flowchart|graph)\s+)(TB|TD|BT|LR|RL)\b/i);
+  state.direction = sourceMatch ? (["TB", "TD", "BT"].includes(sourceMatch[2].toUpperCase()) ? "TB" : "LR") : null;
+  if (sourceMatch){
+    state.directionButton = makeDiagramButton("direction", "Switch diagram to " + (state.direction === "LR" ? "top-to-bottom" : "left-to-right"), "direction", async () => {
+      state.direction = state.direction === "LR" ? "TB" : "LR";
+      state.directionButton.title = "Switch diagram to " + (state.direction === "LR" ? "top-to-bottom" : "left-to-right");
+      state.directionButton.setAttribute("aria-label", state.directionButton.title);
+      delete el.dataset.renderedTheme;
+      resetDiagram(state);
+      await renderDiagram(el);
+    });
+  }
+  toolbar.append(state.zoomOut, state.level, state.zoomIn, state.reset, state.fullscreen);
+  if (state.download) toolbar.append(state.download);
+  if (state.directionButton) toolbar.append(state.directionButton);
+
+  // Wheel events are only intercepted when the selected zoom mode is active — or in fullscreen,
+  // where there is no page to scroll, so the wheel zooms whatever the setting says.
+  viewport.addEventListener("wheel", event => {
+    const enabled = isDiagramFullscreen(state.figure) || state.wheelMode === "zoom" ||
+      (state.wheelMode === "modifier" && (event.ctrlKey || event.metaKey));
+    if (!enabled) return;
+    event.preventDefault();
+    const direction = Math.sign(event.deltaY);
+    if (direction) setDiagramZoom(state, state.zoom * Math.pow(ZOOM_STEP, -direction), {x:event.clientX, y:event.clientY});
+  }, {passive:false});
+
+  let drag = null;
+  viewport.addEventListener("pointerdown", event => {
+    if (event.button !== 0 || !canPan(state)) return;
+    drag = {id:event.pointerId, x:event.clientX, y:event.clientY};
+    viewport.setPointerCapture(event.pointerId);
+    viewport.classList.add("is-dragging");
+    event.preventDefault();
+  });
+  viewport.addEventListener("pointermove", event => {
+    if (!drag || drag.id !== event.pointerId) return;
+    state.x += event.clientX - drag.x;
+    state.y += event.clientY - drag.y;
+    drag.x = event.clientX;
+    drag.y = event.clientY;
+    applyDiagramTransform(state);
+  });
+  const stopDrag = event => {
+    if (!drag || drag.id !== event.pointerId) return;
+    drag = null;
+    viewport.classList.remove("is-dragging");
+    if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+  };
+  viewport.addEventListener("pointerup", stopDrag);
+  viewport.addEventListener("pointercancel", stopDrag);
+  viewport.addEventListener("lostpointercapture", () => {
+    drag = null;
+    viewport.classList.remove("is-dragging");
+  });
+  viewport.addEventListener("keydown", event => {
+    if (event.key === "+" || event.key === "=") setDiagramZoom(state, state.zoom * ZOOM_STEP);
+    else if (event.key === "-") setDiagramZoom(state, state.zoom / ZOOM_STEP);
+    else if (event.key === "0") resetDiagram(state);
+    else return;
+    event.preventDefault();
+  });
+  diagramStates.set(el, state);
+  diagramStatesList.push(state);
+  applyDiagramTransform(state);
+  return state;
+}
+
+function configure(dark = isDark(), htmlLabels = true){
+  mermaid.initialize({
+    startOnLoad:false,
+    theme: dark ? "dark" : "default",
+    securityLevel:"strict",
+    fontFamily:"Inter, system-ui, sans-serif",
+    htmlLabels, flowchart:{ htmlLabels },
+    themeVariables: dark
+      ? { background:"#26262c", mainBkg:"#3f3f52", primaryColor:"#3f3f52",
+          primaryTextColor:"#f4f4f5", primaryBorderColor:"#6366f1",
+          lineColor:"#9a9aa5", textColor:"#e4e4e7" }
+      : { background:"#fafafa", primaryColor:"#eef2ff", lineColor:"#8b8b96" }
+  });
+}
+
+function diagramSource(el){
+  const state = diagramStates.get(el);
+  if (!state?.direction) return el.dataset.src;
+  return el.dataset.src.replace(/^(\s*(?:flowchart|graph)\s+)(TB|TD|BT|LR|RL)\b/i, (_, prefix) => prefix + state.direction);
+}
+
+/* Render lazily, preserving the control UI and zoom state across theme changes. */
+async function renderDiagram(el){
+  initializeDiagram(el);
+  const pending = renderTasks.get(el);
+  if (pending) await pending;
+  if (el.dataset.renderedTheme === (isDark() ? "dark" : "light")) return;
+
+  // Mermaid's theme configuration is global; serialize renders to avoid races.
+  const task = diagramRenderQueue.then(async () => {
+    const theme = isDark() ? "dark" : "light";
+    if (el.dataset.renderedTheme === theme) return;
+    configure();
+    try {
+      const {svg} = await mermaid.render(`m${el.dataset.i}-${++renderId}`, diagramSource(el));
+      el.innerHTML = svg;
+      el.dataset.renderedTheme = theme;
+    } catch (err){
+      const error = document.createElement("p");
+      error.style.color = "#ef4444";
+      error.style.fontSize = "13px";
+      error.textContent = `Diagram failed to render: ${err.message}`;
+      el.replaceChildren(error);
+    }
+  });
+  diagramRenderQueue = task;
+  renderTasks.set(el, task);
+  try { await task; }
+  finally { if (renderTasks.get(el) === task) renderTasks.delete(el); }
+}
+
+/* ── download: always a light-theme PNG, whatever theme the page is showing ── */
+// Rendered again rather than copied from the page: the on-screen SVG may be the dark one, and its
+// HTML labels sit in <foreignObject>, which taints the canvas and blocks toBlob. Plain SVG text
+// labels export cleanly.
+function svgToPng(svg, scale = 2, pad = 32){
+  const root = new DOMParser().parseFromString(svg, "image/svg+xml").documentElement;
+  const [, , vw, vh] = (root.getAttribute("viewBox") || "").split(/[\s,]+/).map(Number);
+  const width = vw || 800, height = vh || 600;
+  root.setAttribute("width", width);
+  root.setAttribute("height", height);
+  root.style.maxWidth = "none";
+  const src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(root))}`;
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      // a white margin of `pad` (CSS px) on every side, so the image doesn't end at the diagram's edge
+      canvas.width = Math.ceil((width + pad * 2) * scale);
+      canvas.height = Math.ceil((height + pad * 2) * scale);
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, pad * scale, pad * scale, width * scale, height * scale);
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("the image could not be encoded")), "image/png");
+    };
+    img.onerror = () => reject(new Error("the diagram could not be drawn"));
+    img.src = src;
+  });
+}
+
+async function downloadDiagram(el, state){
+  const button = state.download;
+  button.disabled = true;
+  try {
+    // Through the same queue as on-screen renders: mermaid's config is global.
+    const task = diagramRenderQueue.then(async () => {
+      configure(false, false);
+      try { return (await mermaid.render(`x${el.dataset.i}-${++renderId}`, diagramSource(el))).svg; }
+      finally { configure(); }
+    });
+    diagramRenderQueue = task.catch(() => {});
+    const blob = await svgToPng(await task);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${el.closest(".sec")?.id || "diagram"}-${Number(el.dataset.i) + 1}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    button.title = "Download as image (PNG, light theme)";
+  } catch (err){
+    button.title = `Download failed: ${err.message}`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function renderIn(root){
+  for (const el of root.querySelectorAll(".mermaid")) await renderDiagram(el);
+}
+function reRender(){
+  const open = document.querySelector(".sec.is-active");
+  if (open) renderIn(open);
+}
+
+/* ── contents, generated from the sections ── */
+const sections = [...document.querySelectorAll(".sec")];
+const pane = document.querySelector(".body");
+const list = document.getElementById("toc-list");
+const toc = document.querySelector(".toc");
+const tocToggle = document.getElementById("toc-toggle");
+// A section heading is as tall as the sidebar head, so its underline continues the head's divider.
+// Measured, not fixed: the title and kicker wrap differently per document and per width. The first
+// value is set by an inline script in the shell before first paint (this module waits on mermaid);
+// this keeps it in step after fonts load and on resize. Fractional, not offsetHeight: rounding to
+// whole pixels leaves a 1px step where the two lines meet.
+const sidebarHead = document.querySelector(".sidebar-head");
+new ResizeObserver(() => root.style.setProperty("--head-h", `${sidebarHead.getBoundingClientRect().height}px`)).observe(sidebarHead);
+function setContentsExpanded(expanded){
+  toc.classList.toggle("is-expanded", expanded);
+  tocToggle.setAttribute("aria-expanded", String(expanded));
+  tocToggle.setAttribute("aria-label", expanded ? "Hide contents" : "Show contents");
+  tocToggle.title = expanded ? "Hide contents" : "Show contents";
+}
+tocToggle.addEventListener("click", () => {
+  setContentsExpanded(tocToggle.getAttribute("aria-expanded") !== "true");
+});
+document.addEventListener("pointerdown", event => {
+  if (toc.classList.contains("is-expanded") &&
+      !toc.contains(event.target) && !tocToggle.contains(event.target)){
+    setContentsExpanded(false);
+  }
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && toc.classList.contains("is-expanded")){
+    setContentsExpanded(false);
+    tocToggle.focus();
+  }
+});
+
+list.innerHTML = sections
+  .map(s => `<li><a href="#${s.id}">${s.querySelector("h2").textContent.trim()}</a></li>`)
+  .join("");
+const links = new Map(sections.map((s, i) => [s.id, list.children[i].firstElementChild]));
+
+/* ── search: every section, not just the open one ── */
+const searchInput = document.getElementById("doc-search");
+const results = document.getElementById("search-results");
+// Indexed once, before any diagram renders: mermaid source is not prose.
+const searchIndex = sections.map(s => {
+  const copy = s.cloneNode(true);
+  copy.querySelectorAll("h2, .mermaid").forEach(el => el.remove());
+  return { id:s.id, title:s.querySelector("h2").textContent.trim(),
+           text:copy.textContent.replace(/\s+/g, " ").trim() };
+});
+let terms = [];
+const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const termPattern = flags => new RegExp(terms.map(escapeRe).join("|"), flags);
+
+/* builds text + <mark> nodes, never innerHTML, so document text stays text */
+function appendHighlighted(el, str, className = ""){
+  let last = 0;
+  for (const m of str.matchAll(termPattern("gi"))){
+    el.append(str.slice(last, m.index));
+    const mark = document.createElement("mark");
+    if (className) mark.className = className;
+    mark.textContent = m[0];
+    el.append(mark);
+    last = m.index + m[0].length;
+  }
+  el.append(str.slice(last));
+}
+
+function snippetOf(text){
+  const lower = text.toLowerCase();
+  const at = Math.min(...terms.map(t => lower.indexOf(t)).filter(i => i >= 0));
+  if (!isFinite(at)) return text.length > 110 ? `${text.slice(0, 110)}…` : text;
+  const start = Math.max(0, at - 40), end = Math.min(text.length, at + 110);
+  return `${start ? "…" : ""}${text.slice(start, end).trim()}${end < text.length ? "…" : ""}`;
+}
+
+function clearHighlights(){
+  for (const mark of document.querySelectorAll("mark.search-hit")){
+    const parent = mark.parentNode;
+    mark.replaceWith(mark.textContent);
+    parent.normalize();
+  }
+}
+
+/* marks every match in one section; diagrams and their controls are left alone */
+function highlightSection(section){
+  clearHighlights();
+  if (!section || !terms.length) return;
+  const test = termPattern("i");
+  const walker = document.createTreeWalker(section, NodeFilter.SHOW_TEXT, {
+    acceptNode: node =>
+      node.parentElement.closest(".mermaid, .diagram-toolbar") || !test.test(node.nodeValue)
+        ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes){
+    const frag = document.createDocumentFragment();
+    appendHighlighted(frag, node.nodeValue, "search-hit");
+    node.replaceWith(frag);
+  }
+}
+
+function runSearch(){
+  const query = searchInput.value.trim().toLowerCase();
+  terms = query.length < 2 ? [] : [...new Set(query.split(/\s+/))];
+  toc.classList.toggle("is-searching", terms.length > 0);
+  results.hidden = !terms.length;
+  highlightSection(document.querySelector(".sec.is-active"));
+  if (!terms.length){ results.replaceChildren(); return; }
+
+  const hits = [];
+  for (const entry of searchIndex){
+    const title = entry.title.toLowerCase(), text = entry.text.toLowerCase();
+    if (!terms.every(t => title.includes(t) || text.includes(t))) continue;
+    // a title hit outranks any number of body hits; ties keep document order
+    const score = terms.reduce((sum, t) =>
+      sum + (title.includes(t) ? 1000 : 0) + text.split(t).length - 1, 0);
+    hits.push({ entry, score });
+  }
+  hits.sort((a, b) => b.score - a.score);
+
+  const meta = document.createElement("p");
+  meta.className = "search-meta";
+  meta.setAttribute("role", "status");
+  meta.textContent = hits.length ? `${hits.length} section${hits.length === 1 ? "" : "s"}` : "No matches";
+  const ol = document.createElement("ol");
+  for (const { entry } of hits){
+    const a = document.createElement("a");
+    a.href = `#${entry.id}`;
+    const title = document.createElement("span");
+    title.className = "hit-title";
+    appendHighlighted(title, entry.title);
+    const snippet = document.createElement("span");
+    snippet.className = "hit-snippet";
+    appendHighlighted(snippet, snippetOf(entry.text));
+    a.append(title, snippet);
+    const li = document.createElement("li");
+    li.append(a);
+    ol.append(li);
+  }
+  results.replaceChildren(meta, ol);
+}
+
+function openHit(id){
+  show(id);
+  document.querySelector(".sec.is-active mark.search-hit")?.scrollIntoView({ block:"center" });
+}
+searchInput.addEventListener("input", runSearch);
+searchInput.addEventListener("keydown", event => {
+  if (event.key === "Enter"){
+    const first = results.querySelector("a");
+    if (first){ event.preventDefault(); openHit(decodeURIComponent(first.hash.slice(1))); }
+  } else if (event.key === "Escape" && searchInput.value){
+    event.stopPropagation();   // first Escape clears the query, the next one closes the panel
+    searchInput.value = "";
+    runSearch();
+  }
+});
+results.addEventListener("click", event => {
+  const a = event.target.closest("a");
+  if (!a) return;
+  event.preventDefault();
+  openHit(decodeURIComponent(a.hash.slice(1)));
+});
+document.addEventListener("keydown", event => {
+  const typing = event.target.closest?.("input, textarea, select, [contenteditable]");
+  if ((event.key === "/" && !typing) || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k")){
+    event.preventDefault();
+    // on mobile the field lives in the collapsed contents panel
+    if (getComputedStyle(tocToggle).display !== "none") setContentsExpanded(true);
+    searchInput.focus();
+    searchInput.select();
+  }
+});
+
+/* Section navigation uses the same show() path as the contents list. */
+const previousSectionButton = document.querySelector(".mobile-section-prev");
+const nextSectionButton = document.querySelector(".mobile-section-next");
+function updateSectionNavigation(index){
+  previousSectionButton.disabled = index <= 0;
+  const last = index >= sections.length - 1;
+  nextSectionButton.disabled = sections.length === 0;
+  nextSectionButton.textContent = last ? "Home" : "Next";
+  nextSectionButton.setAttribute("aria-label", last ? "Go to first section" : "Next section");
+}
+function moveSection(offset){
+  const current = sections.findIndex(section => section.classList.contains("is-active"));
+  const target = sections[current + offset];
+  if (target) show(target.id);
+}
+previousSectionButton.addEventListener("click", () => moveSection(-1));
+nextSectionButton.addEventListener("click", () => {
+  const index = sections.findIndex(section => section.classList.contains("is-active"));
+  if (index === sections.length - 1) {
+    if (sections.length) show(sections[0].id);
+  } else {
+    moveSection(1);
+  }
+});
+document.querySelectorAll(".section-home-link").forEach(button => {
+  button.addEventListener("click", () => {
+    if (sections.length) show(sections[0].id);
+  });
+});
+
+// Swipe horizontally across document content on mobile to change sections.
+// Preserve vertical scrolling and interactive controls; allow swiping on unzoomed diagrams.
+let swipeStart = null;
+pane.addEventListener("touchstart", event => {
+  swipeStart = null;
+  if (!matchMedia("(max-width: 900px)").matches || event.touches.length !== 1) return;
+  if (event.target.closest("button, a, input, textarea, select, [contenteditable], .table-wrap, pre, [role=slider], .diagram-toolbar")) return;
+  const viewport = event.target.closest(".diagram-viewport");
+  if (viewport) {
+    const diagram = viewport.querySelector(".mermaid");
+    const state = diagram && diagramStates.get(diagram);
+    // Zoomed or fullscreen diagrams retain their own drag/pan gestures.
+    if (!state || state.zoom > 1.01 || isDiagramFullscreen(state.figure)) return;
+  }
+  const touch = event.touches[0];
+  swipeStart = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+}, { passive: true });
+pane.addEventListener("touchmove", event => {
+  if (event.touches.length !== 1) swipeStart = null;
+}, { passive: true });
+pane.addEventListener("touchcancel", () => { swipeStart = null; }, { passive: true });
+pane.addEventListener("touchend", event => {
+  if (!swipeStart || !matchMedia("(max-width: 900px)").matches || event.changedTouches.length !== 1) {
+    swipeStart = null;
+    return;
+  }
+  const { x, y, time } = swipeStart;
+  swipeStart = null;
+  const touch = event.changedTouches[0];
+  const dx = touch.clientX - x;
+  const dy = touch.clientY - y;
+  if (Math.abs(dx) < 75 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - time > 900) return;
+  moveSection(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+/* ── one section at a time ── */
+let active = null;
+function show(id){
+  // A generated document can legitimately have no sections yet (a site created
+  // before its first push). The template never had that case; here it would
+  // throw on sections[0] and take the theme button down with it.
+  if (!sections.length) return;
+  const section = sections.find(s => s.id === id) || sections[0];
+  for (const s of sections) s.classList.toggle("is-active", s === section);
+  updateSectionNavigation(sections.indexOf(section));
+  active?.removeAttribute("aria-current");
+  active = links.get(section.id);
+  active?.setAttribute("aria-current", "true");
+  pane.scrollTop = 0;
+  setContentsExpanded(false);
+  highlightSection(section);
+  if (location.hash.slice(1) !== section.id) history.replaceState(null, "", `#${section.id}`);
+  renderIn(section);
+}
+list.addEventListener("click", e => {
+  const a = e.target.closest("a");
+  if (!a) return;
+  e.preventDefault();
+  show(decodeURIComponent(a.hash.slice(1)));
+});
+addEventListener("hashchange", () => show(decodeURIComponent(location.hash.slice(1))));
+
+/* printing needs every section visible and every diagram drawn */
+document.querySelectorAll(".print-btn").forEach(b => b.addEventListener("click", async () => {
+  document.body.classList.add("show-all");
+  await renderIn(document.body);
+  window.print();
+  document.body.classList.remove("show-all");
+  reRender();
+}));
+
+applyTheme(mode, false);
+show(decodeURIComponent(location.hash.slice(1)));   /* first item unless a hash says otherwise */
+</script>
+<script>
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("./sw.js").catch(() => {});
+}
+</script>
+<script>
+/* Tabs between a section's views (WAI-ARIA tabs pattern). Pure show/hide: the doc shell already
+   renders every diagram in an opened section, hidden panels included, so nothing re-renders here. */
+(() => {
+  function select(tab, focus){
+    const list = tab.closest(".vtabs");
+    const views = list.closest(".vviews");
+    for (const t of list.querySelectorAll(".vtab")){
+      const on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      const panel = views.querySelector(`#${CSS.escape(t.getAttribute("aria-controls"))}`);
+      if (panel) panel.hidden = !on;
+    }
+    if (focus) tab.focus();
+  }
+  document.addEventListener("click", event => {
+    const tab = event.target.closest?.(".vtab");
+    if (tab) select(tab, false);
+  });
+  document.addEventListener("keydown", event => {
+    const tab = event.target.closest?.(".vtab");
+    if (!tab) return;
+    const tabs = [...tab.closest(".vtabs").querySelectorAll(".vtab")];
+    const i = tabs.indexOf(tab);
+    const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    select(tabs[(next + tabs.length) % tabs.length], true);
+  });
+})();
+</script>
+</body>
+</html>

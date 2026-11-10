@@ -1,0 +1,318 @@
+{
+  "title": "MCP 2.0 Features — Visual Guide",
+  "brand": "MCP 2.0 · Visual Field Guide",
+  "kicker": "",
+  "rev": "November 2026 · Released specification",
+  "description": "Interactive visual guide to the MCP 2026-07-28 specification: stateless core, MRTR, MCP Apps, Tasks, security, caching and migration.",
+  "accent": {
+    "400": "#38bdf8",
+    "500": "#0284c7",
+    "600": "#0369a1",
+    "soft": "#e0f2fe"
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "heading": "MCP 2.0 at a glance",
+      "summary": "A visual map of the July 28, 2026 MCP specification—stateless by default, extensible by design.",
+      "views": [
+        {
+          "kind": "mindmap",
+          "title": "Feature landscape",
+          "code": "mindmap\n  root((MCP 2026-07-28))\n    Stateless core\n      Self-describing requests\n      No session handshake\n      Optional discovery\n    HTTP at scale\n      Header routing\n      Cacheable catalogs\n      Load balancing\n    Agent interactions\n      Multi-round-trip\n      Subscriptions\n    Extensions\n      Tasks\n      MCP Apps\n      Enterprise auth\n    Security\n      OAuth alignment\n      Issuer validation\n      Client metadata"
+        },
+        {
+          "kind": "table",
+          "title": "Release highlights",
+          "columns": [
+            "Area",
+            "What changed",
+            "Why it matters"
+          ],
+          "rows": [
+            [
+              "Core",
+              "Stateless request/response",
+              "Simpler horizontal scaling"
+            ],
+            [
+              "Transport",
+              "Mcp-Method and Mcp-Name headers",
+              "Gateway routing and policy"
+            ],
+            [
+              "Interaction",
+              "Multi Round-Trip Requests",
+              "Human and model input without open bidirectional streams"
+            ],
+            [
+              "Catalogs",
+              "Cache hints and deterministic ordering",
+              "Lower overhead and stable prompt caches"
+            ],
+            [
+              "Ecosystem",
+              "Extensions framework",
+              "Optional, interoperable capabilities"
+            ],
+            [
+              "Security",
+              "OAuth/OIDC hardening",
+              "Safer client identity and authorization"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "architecture",
+      "heading": "Stateless architecture",
+      "summary": "Each request identifies its protocol version and capabilities so any healthy replica can serve it.",
+      "views": [
+        {
+          "kind": "flowchart",
+          "title": "Request path",
+          "code": "flowchart LR\n  U[AI application] --> C[MCP client]\n  C -->|POST plus MCP headers| G[API gateway]\n  G --> L[Load balancer]\n  L --> S1[MCP server A]\n  L --> S2[MCP server B]\n  S1 --> D[(Data and tools)]\n  S2 --> D\n  C -.->|Optional discover| G"
+        },
+        {
+          "kind": "sequence",
+          "title": "Stateless exchange",
+          "code": "sequenceDiagram\n  participant C as MCP Client\n  participant G as Gateway\n  participant S as MCP Server\n  opt Capability discovery\n    C->>G: server/discover\n    G->>S: Discovery request\n    S-->>C: Server capabilities\n  end\n  C->>G: POST tools/call + protocol _meta\n  Note over C,G: Mcp-Method / Mcp-Name headers\n  G->>S: Route by headers\n  S-->>C: JSON-RPC result + server _meta"
+        }
+      ]
+    },
+    {
+      "id": "mrtr",
+      "heading": "Multi Round-Trip Requests",
+      "summary": "A server can request more input and the client can resume the operation through explicit round trips.",
+      "views": [
+        {
+          "kind": "sequence",
+          "title": "Human in the loop",
+          "code": "sequenceDiagram\n  participant U as User\n  participant C as MCP Client\n  participant S as MCP Server\n  C->>S: tools/call\n  S-->>C: input_required with request details\n  C->>U: Request confirmation or information\n  U-->>C: Provide input\n  C->>S: Continue request with supplied input\n  S-->>C: Completed result"
+        },
+        {
+          "kind": "flowchart",
+          "title": "Decision flow",
+          "code": "flowchart TD\n  A[Client sends request] --> B[Server evaluates]\n  B --> C{More input needed?}\n  C -->|No| D[Return result]\n  C -->|Yes| E[Return input_required]\n  E --> F[Client obtains input]\n  F --> G[Client retries with input]\n  G --> B"
+        }
+      ]
+    },
+    {
+      "id": "extensions",
+      "heading": "Extensions: Apps, Tasks and enterprise auth",
+      "summary": "The core protocol stays lean while negotiated extensions add specialized capabilities.",
+      "views": [
+        {
+          "kind": "mindmap",
+          "title": "Extension ecosystem",
+          "code": "mindmap\n  root((MCP Extensions))\n    MCP Apps\n      Interactive interfaces\n      Rich tool experiences\n    Tasks\n      Long-running operations\n      Task status\n      Result retrieval\n    Enterprise Managed Authorization\n      Organization policies\n      Managed identity\n    Custom extensions\n      Capability negotiation\n      Versioned contracts"
+        },
+        {
+          "kind": "flowchart",
+          "title": "Capability negotiation",
+          "code": "flowchart LR\n  A[Client declares extensions] --> C[Compatible capabilities]\n  B[Server declares extensions] --> C\n  C --> D{Extension supported?}\n  D -->|Yes| E[Enable extended workflow]\n  D -->|No| F[Use core MCP behavior]"
+        }
+      ]
+    },
+    {
+      "id": "transport",
+      "heading": "HTTP routing and discovery",
+      "summary": "Method and tool names are visible to infrastructure without parsing the JSON-RPC body.",
+      "views": [
+        {
+          "kind": "flowchart",
+          "title": "Gateway policy",
+          "code": "flowchart TD\n  A[HTTP POST] --> B[Read Mcp-Method and Mcp-Name]\n  B --> C{Authorized route?}\n  C -->|No| D[Reject request]\n  C -->|Yes| E[Select backend replica]\n  E --> F[Execute JSON-RPC method]\n  F --> G[Return response]"
+        },
+        {
+          "kind": "table",
+          "title": "Transport changes",
+          "columns": [
+            "Earlier pattern",
+            "2026-07-28 pattern"
+          ],
+          "rows": [
+            [
+              "Initialize handshake",
+              "Self-describing request metadata"
+            ],
+            [
+              "Protocol sessions and sticky routing",
+              "Stateless server instances"
+            ],
+            [
+              "Inspect request body for routing",
+              "Mcp-Method and Mcp-Name headers"
+            ],
+            [
+              "Continuously open streams for reverse calls",
+              "Multi Round-Trip Requests"
+            ],
+            [
+              "Transport-level server push",
+              "Explicit subscription/listen model"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "catalogs",
+      "heading": "Cacheable catalogs and predictable ordering",
+      "summary": "Catalog results are designed for repeatability, reuse and stable model context.",
+      "views": [
+        {
+          "kind": "sequence",
+          "title": "Cache-aware listing",
+          "code": "sequenceDiagram\n  participant C as Client\n  participant K as Cache\n  participant S as MCP Server\n  C->>K: Need tools/list\n  alt Cached response valid\n    K-->>C: Ordered tool catalog\n  else Cache expired\n    C->>S: tools/list\n    S-->>C: Deterministic list + cache hints\n    C->>K: Store until TTL\n  end"
+        },
+        {
+          "kind": "flowchart",
+          "title": "Catalog lifecycle",
+          "code": "flowchart LR\n  A[tools/list] --> B[Deterministic ordering]\n  B --> C[Cache TTL hints]\n  C --> D[Client cache]\n  D --> E[Reduced repeated calls]\n  D --> F[Stable prompt prefixes]"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "heading": "Authentication and authorization",
+      "summary": "The release hardens OAuth-style identity handling and shifts client onboarding toward metadata documents.",
+      "views": [
+        {
+          "kind": "flowchart",
+          "title": "Security checkpoints",
+          "code": "flowchart TD\n  A[MCP client] --> B[Read authorization server metadata]\n  B --> C[Validate issuer identity]\n  C --> D[Use client metadata document]\n  D --> E[OAuth authorization]\n  E --> F[Gateway validates credentials and scopes]\n  F --> G[Authorized tool request]"
+        },
+        {
+          "kind": "table",
+          "title": "Security changes",
+          "columns": [
+            "Capability",
+            "2026 specification focus"
+          ],
+          "rows": [
+            [
+              "Issuer validation",
+              "RFC 9207-based issuer checks"
+            ],
+            [
+              "Client identity",
+              "Client metadata documents over dynamic registration"
+            ],
+            [
+              "Enterprise authorization",
+              "Optional managed authorization extension"
+            ],
+            [
+              "Gateway controls",
+              "Method and tool headers usable in policy"
+            ],
+            [
+              "Least privilege",
+              "Enforce resource-specific authorization"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "migration",
+      "heading": "Migration from MCP 2025 to 2026",
+      "summary": "Review sessions, handshake, metadata, reverse calls and SDK compatibility before upgrading.",
+      "views": [
+        {
+          "kind": "flowchart",
+          "title": "Upgrade plan",
+          "code": "flowchart TD\n  A[Inventory clients and servers] --> B[Check SDK and protocol support]\n  B --> C[Remove initialize and sessions for 2026]\n  C --> D[Add protocol metadata per request]\n  D --> E[Add standard HTTP routing headers]\n  E --> F[Adapt reverse calls to MRTR]\n  F --> G[Test extensions and authorization]\n  G --> H[Run conformance and rollout]"
+        },
+        {
+          "kind": "table",
+          "title": "Compatibility checklist",
+          "columns": [
+            "Check",
+            "Recommendation",
+            "Priority"
+          ],
+          "rows": [
+            [
+              "Protocol version",
+              "Use 2026-07-28 with modern clients",
+              "Critical"
+            ],
+            [
+              "Handshake",
+              "Do not initialize on modern protocol",
+              "Critical"
+            ],
+            [
+              "Session state",
+              "Use explicit tool handles if needed",
+              "High"
+            ],
+            [
+              "Request _meta",
+              "Send version and client capabilities",
+              "Critical"
+            ],
+            [
+              "Tool listing",
+              "Verify ordering and TTL behavior",
+              "Medium"
+            ],
+            [
+              "Extension negotiation",
+              "Enable only mutually supported features",
+              "Medium"
+            ],
+            [
+              "Authorization",
+              "Validate issuer, client and scopes",
+              "High"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "resources",
+      "heading": "Reference sources and roadmap",
+      "summary": "Official release and specification documents are the source of truth; future roadmap work is separate from shipped functionality.",
+      "views": [
+        {
+          "kind": "table",
+          "title": "Official references",
+          "columns": [
+            "Source",
+            "Location",
+            "Scope"
+          ],
+          "rows": [
+            [
+              "Release announcement",
+              "blog.modelcontextprotocol.io/posts/2026-07-28/",
+              "Shipped July 2026 release"
+            ],
+            [
+              "Specification changelog",
+              "modelcontextprotocol.io/specification/2026-07-28/changelog",
+              "Detailed normative changes"
+            ],
+            [
+              "Specification overview",
+              "modelcontextprotocol.io/specification/2026-07-28/basic",
+              "Protocol components"
+            ],
+            [
+              "Future roadmap",
+              "blog.modelcontextprotocol.io/posts/mcp-roadmap/",
+              "Upcoming directions, not shipped features"
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-11-10T16:15:53.704Z",
+  "updatedAt": "2026-11-10T16:15:53.704Z"
+}
